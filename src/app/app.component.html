@@ -22,7 +22,7 @@
 <mat-spinner *ngIf="loading"></mat-spinner>
 
 <div #result class="result" *ngIf="!loading && (reviewChanges | async); let review">
-  <div style="display: none">{{review.name}} Review</div>
+  <div style="display: none">{{review.game}} Review</div>
   <div
       style="display: flex; flex-wrap: wrap; color: #badefc; background-color: #16181c; border-radius: 5px; border: 1px solid #242832; overflow: hidden; box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.7)">
       <div
