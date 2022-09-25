@@ -97,7 +97,8 @@ export class AppComponent {
               ? new URL(platformLink.getAttribute('href')!, reviewResponse.url!)
               : null,
           starsPercentage: stars ? stars.style['width'] : null,
-          body: doc.querySelector('.review-body p')!.innerHTML,
+          body: Array.from(doc.querySelectorAll('.review-body .formatted-text')!)
+              .map(el => `<p>${el.innerHTML}</p>`).join(''),
           mastered: !!doc.querySelector('.mastered-icon'),
           backer: !!doc.querySelector('.backer-badge'),
           replay: !!doc.querySelector('.review-card .fa-history'),
