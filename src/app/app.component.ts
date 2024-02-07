@@ -1,4 +1,4 @@
-import {Component, EventEmitter, ViewChild, ElementRef} from '@angular/core';
+import {Component, ViewChild, ElementRef} from '@angular/core';
 import {HttpClient} from '@angular/common/http';
 import {FormBuilder, FormControl, Validators} from '@angular/forms';
 import {Observable, catchError, filter, map, switchMap, tap} from 'rxjs';
@@ -74,8 +74,10 @@ export class AppComponent {
         if (!reviewResponse) return Promise.resolve(null);
 
         const doc = domParser.parseFromString(reviewResponse.body!, 'text/html');
-        const usernameLink = doc.querySelector('.username-link a') as HTMLElement;
-        const gameLink = doc.querySelector('.review-card a[href^="/games/"]') as HTMLElement;
+        const usernameLink = doc.querySelector('a:has(.username-link)') as HTMLElement;
+        const reviewer = (usernameLink.querySelector('.username-link') as HTMLElement).innerText.trim();
+        const selfLink = doc.querySelector('.review-card a[href^="/u/"][href*="/logs/"]') as HTMLElement;
+        const gameLink = doc.querySelector('#review-sidebar a[href^="/games/"]') as HTMLElement;
         const gameUrl = new URL(gameLink.getAttribute('href')!, reviewResponse.url!);
         const platformLink = doc.querySelector('.review-platform') as HTMLElement|undefined;
         const stars = doc.querySelector('.stars-top') as HTMLElement|undefined;
@@ -87,17 +89,17 @@ export class AppComponent {
               .filter(text => text.startsWith('Reviewed on '))
               .map(text => text.substring('Reviewed on '.length))
               [0],
-          reviewer: usernameLink.innerText.trim(),
+          reviewer,
           reviewerUrl: new URL(usernameLink.getAttribute('href')!, reviewResponse.url!),
           reviewerAvatar: new URL(doc.querySelector('#avatar img')!.getAttribute('src')!, reviewResponse.url!),
-          game: gameLink.innerText.trim(),
+          game: selfLink.innerText.trim(),
           gameUrl,
           platform: platformLink?.innerText?.trim() ?? null,
           platformUrl: platformLink
               ? new URL(platformLink.getAttribute('href')!, reviewResponse.url!)
               : null,
           starsPercentage: stars ? stars.style['width'] : null,
-          body: Array.from(doc.querySelectorAll('.review-body .formatted-text')!)
+          body: Array.from(doc.querySelectorAll('.review-body .card-text')!)
               .map(el => `<p>${el.innerHTML}</p>`).join(''),
           mastered: !!doc.querySelector('.mastered-icon'),
           backer: !!doc.querySelector('.backer-badge'),
@@ -135,7 +137,9 @@ export class AppComponent {
       // Magic Angular attributes.
       .replace(/ _ng[a-z0-9-]+=""/g, '')
       // Angular-injected class.
-      .replace(/ class="ng-star-inserted"/g, '');
+      .replace(/ class="ng-star-inserted"/g, '')
+      // Match Letterboxd's link formatting.
+      .replace(/\<a /g, '<a style="color: #cbd4dc; text-decoration: none; border-bottom: 1px dotted #c2cbd3" ');
     await navigator.clipboard.writeText(html);
     this._snackBar.open("HTML copied!", undefined, { duration: 1000 });
   }
