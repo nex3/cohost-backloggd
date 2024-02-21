@@ -131,15 +131,18 @@ export class AppComponent {
   }
 
   async copyHtml(): Promise<void> {
-    const html = this.wrapper.nativeElement.innerHTML
+    const element = this.wrapper.nativeElement.cloneNode(true) as HTMLElement;
+    // Match Letterboxd's link formatting.
+    element.querySelectorAll("p p a")
+      .forEach(a => a.setAttribute("style",
+          "color: #cbd4dc; text-decoration: none; border-bottom: 1px dotted #c2cbd3"));
+    const html = element.innerHTML
       // Angular adds a bunch of comments that we don't need.
       .replace(/<!--(.|\n)*?-->/mg, '')
       // Magic Angular attributes.
       .replace(/ _ng[a-z0-9-]+=""/g, '')
       // Angular-injected class.
-      .replace(/ class="ng-star-inserted"/g, '')
-      // Match Letterboxd's link formatting.
-      .replace(/\<a /g, '<a style="color: #cbd4dc; text-decoration: none; border-bottom: 1px dotted #c2cbd3" ');
+      .replace(/ class="ng-star-inserted"/g, '');
     await navigator.clipboard.writeText(html);
     this._snackBar.open("HTML copied!", undefined, { duration: 1000 });
   }
