@@ -74,8 +74,9 @@ export class AppComponent {
         if (!reviewResponse) return Promise.resolve(null);
 
         const doc = domParser.parseFromString(reviewResponse.body!, 'text/html');
-        const usernameLink = doc.querySelector('a:has(.username-link)') as HTMLElement;
-        const reviewer = (usernameLink.querySelector('.username-link') as HTMLElement).innerText.trim();
+        const reviewerEl = doc.querySelector('a > .username-link') as HTMLElement;
+        const usernameLink = (reviewerEl as HTMLElement).parentElement!;
+        const reviewer = reviewerEl.innerText.trim();
         const selfLink = doc.querySelector('.review-game-name') as HTMLElement;
         const gameLink = doc.querySelector('#review-sidebar a[href^="/games/"]') as HTMLElement;
         const gameUrl = new URL(gameLink.getAttribute('href')!, reviewResponse.url!);
